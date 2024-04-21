@@ -239,9 +239,10 @@ def predict(job):
 
     detector_dir = os.path.join("usr", "shared", "detector")
     weights_dir = os.path.join(detector_dir, "weights")
-    detector_config_path = os.path.join(detector_dir, "config.json")
-    detector_config = json_io.load_json(detector_config_path)
-    patch_size = detector_config["patch_size"]
+    # detector_config_path = os.path.join(detector_dir, "config.json")
+    # detector_config = json_io.load_json(detector_config_path)
+    # detector_config["patch_size"]
+    patch_size = 624
 
 
     config = create_default_config()
