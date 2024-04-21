@@ -1,0 +1,59 @@
+version: "3.7"
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: fusariumfinder_db_user
+      POSTGRES_PASSWORD: secretDBkeypass
+      POSTGRES_DB: fusariumfinder_db
+    ports:
+      - '8120:5432'
+    volumes:
+      - fusariumfinder_db:/var/lib/postgresql/data
+    networks: 
+      - container_net
+
+
+  myapp:
+    build: 
+      context: .
+    environment:
+      DB_SCHEMA: fusariumfinder_db
+      DB_USER: fusariumfinder_db_user
+      DB_PASSWORD: secretDBkeypass
+      DB_HOST: db 
+      DB_PORT: 5432 
+      NODE_ENV: 'docker'
+      FF_IP: myapp
+      FF_PORT: "${FF_PORT}"
+      FF_PY_PORT: "${FF_PY_PORT}"
+      FF_PATH: "${FF_PATH}"
+      FF_API_KEY: "${FF_API_KEY}"
+      FF_TIMEZONE: "${FF_TIMEZONE}"
+    depends_on:
+      - db
+    ports:
+      - '8115:8115'
+    volumes:
+      - type: bind
+        source: /home/myusername/fusariumfinder/backend/src/usr
+        target: /opt/app/backend/src/usr
+    networks: 
+      - container_net
+
+    runtime: nvidia
+    restart: always
+    
+networks:
+  container_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.26.0.0/24
+
+
+
+volumes:
+  fusariumfinder_db:

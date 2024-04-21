@@ -1,0 +1,68 @@
+doctype html
+
+html
+    head
+        title="Fusarium Finder"
+        meta(name="viewport" content="width=device-width, initial-scale=1")
+
+        link(rel="icon" href=process.env.FF_PATH + "/images/favicon.ico")
+
+
+        //- link(href=process.env.FF_PATH + "/external_stylesheets/font-awesome-6.1.2.css" rel="stylesheet")
+        link(href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" rel="stylesheet")
+        link(href=process.env.FF_PATH + '/stylesheets/main.css' rel='stylesheet')
+        
+        script(src=process.env.FF_PATH + "/external_javascripts/jquery-3.6.0.js")
+
+        script(src=process.env.FF_PATH + '/javascripts/common.js')
+        script(src=process.env.FF_PATH + '/javascripts/admin.js')
+        script(src=process.env.FF_PATH + '/javascripts/modal.js')
+
+    body
+        div(id="container")
+
+            include ./header.pug
+
+
+            div(id="modal" class="modal")
+                div(class="modal-content")
+                    div(class="modal-header" id="modal_head")
+
+                    div(class="modal-body" id="modal_body")
+
+                    div(class="modal-footer")
+
+
+            div(style="height: 8px")
+
+            div(class="panel" style="width: 80%")
+
+
+                div(style="border: 1px solid white; padding: 50px;")
+
+                    div(style="width: 400px; margin: auto")
+
+                        table
+
+                            tr
+
+                                td(style="text-align: left")
+                                    div(style="font-weight: bold; width: 200px") User Accounts 
+
+                                td(style="width: 100%")
+
+
+                                td 
+                                    div(style="width: 30px")
+                                        button(class="button-blue button-blue-hover" style="width: 25px; height: 25px; border-radius: 5px; font-size: 12px;" id="add_usr_button")
+                                            i(class="fa-solid fa-circle-plus")
+
+
+
+                    div(class="scrollable_area" style="width: 400px; height: 300px; border-radius: 10px; overflow-y: scroll; margin: auto")
+                        table(id="user_list" style="border-collapse: collapse")
+
+
+    script.
+        let username = !{JSON.stringify(username)};
+        let data = !{JSON.stringify(data)};
