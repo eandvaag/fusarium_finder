@@ -39,6 +39,7 @@ Below is an explanation of the keys that `ff_ctl.py` expects to find in the `arg
 - `api_key`: The Python process sends this password whenever it sends an HTTP request to the Node.js application. The Node.js application uses this password to verify that the request was sent by the Python process.
 - `admin_username`: Username for the site's administrator account.
 - `admin_password`: Password for the site's administrator account.
+- `gpu_index`: Index of GPU device to use. If only one GPU is available, this should be 0. Use -1 if you want to use the CPU instead.
 
 
 
