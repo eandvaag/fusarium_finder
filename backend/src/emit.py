@@ -8,7 +8,7 @@ if RUNNING_IN_APPTAINER:
     base_url = ""
 else:
     base_url = "https://" + os.environ.get("FF_IP") + ":" + os.environ.get("FF_PORT") + os.environ.get("FF_PATH")
-upload_notification_url = base_url + "/upload_notification"
+upload_notification_url = base_url + "upload_notification"
 
 
 

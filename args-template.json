@@ -8,5 +8,6 @@
     "postgres_db_port": "",
     "api_key": "",
     "admin_username": "",
-    "admin_password": ""
+    "admin_password": "",
+    "gpu_index": ""
 }

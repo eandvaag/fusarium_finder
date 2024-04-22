@@ -1,28 +1,22 @@
 import logging
-import argparse
 import os
 import glob
-import shutil
-import time
-import datetime
 import traceback
 import threading
 import numpy as np
-import math as m
-import random
+import tensorflow as tf
+
 from natsort import natsorted
 import pandas as pd
-import pandas.io.formats.excel
 import urllib3
 
 from flask import Flask, request
 
 
-from io_utils import json_io, tf_record_io
+from io_utils import json_io
 
 import models.yolov4.driver as yolov4_driver
 import emit
-from image_wrapper import ImageWrapper
 import classifier
 
 
@@ -330,8 +324,20 @@ if __name__ == "__main__":
 
 
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
     logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    gpu_index = os.environ.get("FF_GPU_INDEX")
+    if gpu_index is None:
+        gpu_index = 0
+    else:
+        gpu_index = int(gpu_index)
+
+    gpus = tf.config.list_physical_devices("GPU")
+    tf.config.set_visible_devices(gpus[gpu_index], "GPU")
+    logger.info("Using GPU {}.".format(gpu_index))
+
+
 
     for _ in range(TOTAL_WORKERS):
         worker = threading.Thread(target=work)

@@ -48,8 +48,8 @@ def create():
     if url_path_prefix[-1] != "/":
         url_path_prefix = url_path_prefix + "/"
     site_env["FF_PATH"]  = url_path_prefix
- 
     site_env["FF_API_KEY"] = args["api_key"]
+    site_env["FF_GPU_INDEX"] = args["gpu_index"]
 
 
 
