@@ -9,5 +9,5 @@
     "api_key": "",
     "admin_username": "",
     "admin_password": "",
-    "gpu_index": ""
+    "gpu_index": 0
 }
