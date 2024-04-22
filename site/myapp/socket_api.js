@@ -1,7 +1,7 @@
 
 const socket_io = require('socket.io');
 const io = socket_io({
-    "path": process.env.FF_PATH + "/socket.io"
+    "path": process.env.FF_PATH + "socket.io"
 });
 
 let home_id_to_key = {};

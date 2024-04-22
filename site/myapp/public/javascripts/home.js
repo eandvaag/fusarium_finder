@@ -133,7 +133,7 @@ function create_viewer(dzi_image_paths) {
     viewer = OpenSeadragon({
         id: "seadragon_viewer",
         sequenceMode: true,
-        prefixUrl: get_FF_PATH() + "/osd/images/",
+        prefixUrl: ff_path + "osd/images/",
         tileSources: dzi_image_paths,
         showNavigator: false,
         maxZoomLevel: 1000,
@@ -340,7 +340,7 @@ function show_image_predictions() {
 
         let image_set_name = $("#image_set_combo").val();
         let dzi_images_dir = "usr/data/" + username + "/image_sets/" + image_set_name + "/dzi_images";
-        let dzi_image_path = get_FF_PATH() + "/" + dzi_images_dir + "/" + cur_image_name + ".dzi";
+        let dzi_image_path = ff_path + dzi_images_dir + "/" + cur_image_name + ".dzi";
 
         viewer.open(dzi_image_path); 
     };
@@ -445,10 +445,11 @@ $(document).ready(function() {
     initialize_class_select();
     $("#destroy_image_set_button").hide();
     $("#download_csv").hide();
+    $("#image_set_buttons_container").show();
 
     let socket = io(
         "", {
-           path: get_FF_PATH() + "/socket.io"
+           path: ff_path + "socket.io"
     });
 
     socket.emit("join_home", username);
@@ -521,11 +522,11 @@ $(document).ready(function() {
                     let dzi_image_paths = [];
                     let dzi_images_dir = "usr/data/" + username + "/image_sets/" + image_set_name + "/dzi_images";
                     for (let image_name of cur_image_names) {
-                        let dzi_image_path = get_FF_PATH() + "/" + dzi_images_dir + "/" + image_name + ".dzi";
+                        let dzi_image_path = ff_path + dzi_images_dir + "/" + image_name + ".dzi";
                         dzi_image_paths.push(dzi_image_path);
                     }
 
-                    let result_download_path = get_FF_PATH() + "/usr/data/" + username + "/image_sets/" + image_set_name + "/model/result/result.csv";
+                    let result_download_path = ff_path + "usr/data/" + username + "/image_sets/" + image_set_name + "/model/result/result.csv";
                     $("#download_csv").attr("href", result_download_path);
 
                     $("#destroy_image_set_button").show();

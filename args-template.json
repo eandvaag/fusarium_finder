@@ -1,5 +1,5 @@
 {
-    "url_prefix": "",
+    "url_path_prefix": "",
     "site_port": "", 
     "backend_python_port": "", 
     "postgres_db_name": "",

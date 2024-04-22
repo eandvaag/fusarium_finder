@@ -39,8 +39,16 @@ def create():
     site_env["DB_PASSWORD"] = args["postgres_db_password"]
 
     site_env["FF_PORT"] = args["site_port"]
-    site_env["FF_PY_PORT"] = args["backend_python_port"]
-    site_env["FF_PATH"] = args["url_prefix"]
+    site_env["FF_PY_PORT"] = args["backend_python_port"] 
+    url_path_prefix = args["url_path_prefix"]
+    if url_path_prefix == "":
+        url_path_prefix = "/"
+    if url_path_prefix[0] != "/":
+        url_path_prefix = "/" + url_path_prefix
+    if url_path_prefix[-1] != "/":
+        url_path_prefix = url_path_prefix + "/"
+    site_env["FF_PATH"]  = url_path_prefix
+ 
     site_env["FF_API_KEY"] = args["api_key"]
 
 

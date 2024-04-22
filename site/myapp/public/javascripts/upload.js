@@ -120,7 +120,7 @@ function create_image_set_dropzone() {
     );
 
     dropzone_handler = new Dropzone("#image_set_dropzone", { 
-        url: get_FF_PATH() + "/image_set_upload",
+        url: ff_path + "image_set_upload",
         autoProcessQueue: false,
         paramName: function(n) { return 'source_file[]'; },
         uploadMultiple: true,

@@ -119,13 +119,13 @@ exports.post_sign_in = function(req, res, next) {
             else {
                 if (user.is_admin) {
                     req.session.user = user.dataValues;
-                    response.redirect = process.env.FF_PATH + "/admin";
+                    response.redirect = process.env.FF_PATH + "admin";
                     return res.json(response);
                 }
                 else {
                     console.log("redirecting user to their home dir");
                     req.session.user = user.dataValues;
-                    response.redirect = process.env.FF_PATH + "/home/" + req.body.username;
+                    response.redirect = process.env.FF_PATH + "home/" + req.body.username;
                     return res.json(response);
                 }
             }
@@ -153,7 +153,11 @@ exports.get_admin = function(req, res, next) {
             let data = {};
             data["users"] = users;
             
-            res.render("admin", {username: req.session.user.username, data: data});
+            res.render("admin", {
+                ff_path: process.env.FF_PATH,
+                username: req.session.user.username, 
+                data: data
+            });
 
         }).catch(error => {
             console.log(error);
@@ -414,6 +418,7 @@ exports.get_home = function(req, res, next) {
         console.log("rendering home page");
     
         res.render("home", {
+            ff_path: process.env.FF_PATH,
             username: username, 
             data: data
         });

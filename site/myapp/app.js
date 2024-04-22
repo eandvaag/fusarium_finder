@@ -15,7 +15,7 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-app.use(process.env.FF_PATH + '/osd', express.static(__dirname + '/external_node_modules/openseadragon_3_0_0'));
+app.use(process.env.FF_PATH + 'osd', express.static(path.join(__dirname, "external_node_modules", "openseadragon_3_0_0")));
 
 
 app.use(logger('dev'));
@@ -27,7 +27,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use(process.env.FF_PATH, express.static(path.join(__dirname, 'public')));
-app.use(process.env.FF_PATH + '/usr', express.static(path.join(__dirname, 'usr')));
+app.use(process.env.FF_PATH + 'usr', express.static(path.join(__dirname, 'usr')));
 app.use(session({
   key: 'user_sid',
   secret: 'secretcodeword',

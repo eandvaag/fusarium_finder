@@ -126,7 +126,7 @@ function create_user_account() {
 
 $(document).ready(function() {
 
-    $("#site_home_button").attr("href", get_FF_PATH() + "/admin");
+    $("#site_home_button").attr("href", ff_path + "admin");
 
 
     usernames = [];

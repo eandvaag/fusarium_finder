@@ -61,12 +61,12 @@ def check_job(req):
 
 
 
-@app.route(os.environ.get("FF_PATH") + '/health_request', methods=['POST'])
+@app.route(os.environ.get("FF_PATH") + 'health_request', methods=['POST'])
 def health_request():
     return {"message": "alive"}
 
 
-@app.route(os.environ.get("FF_PATH") + '/is_occupied', methods=['POST'])
+@app.route(os.environ.get("FF_PATH") + 'is_occupied', methods=['POST'])
 def is_occupied():
 
     logger = logging.getLogger(__name__)
@@ -82,11 +82,11 @@ def is_occupied():
         return {"message": 'Content-Type not supported!'}
     
 
-@app.route(os.environ.get("FF_PATH") + '/get_num_workers', methods=['POST'])
+@app.route(os.environ.get("FF_PATH") + 'get_num_workers', methods=['POST'])
 def get_num_workers():
     return {"num_workers": str(waiting_workers)}
 
-@app.route(os.environ.get("FF_PATH") + '/add_request', methods=['POST'])
+@app.route(os.environ.get("FF_PATH") + 'add_request', methods=['POST'])
 def add_request():
     
     logger = logging.getLogger(__name__)

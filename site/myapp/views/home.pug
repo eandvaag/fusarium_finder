@@ -5,34 +5,33 @@ html
         title="Fusarium Finder"
         meta(name="viewport" content="width=device-width, initial-scale=1")
 
-        link(rel="icon" href=process.env.FF_PATH + "/images/favicon.ico")
+        link(rel="icon" href=process.env.FF_PATH + "images/favicon.ico")
 
         link(href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" rel="stylesheet")
-        //- link(href=process.env.FF_PATH + "/external_stylesheets/dropzone-6.0.0.css" rel="stylesheet")
+        //- link(href=process.env.FF_PATH + "external_stylesheets/dropzone-6.0.0.css" rel="stylesheet")
         link(href="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone.css" rel="stylesheet" type="text/css")
         link(href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/css/select2.min.css" rel="stylesheet")
 
         
-        link(href=process.env.FF_PATH + '/stylesheets/main.css' rel='stylesheet')
-        link(href=process.env.FF_PATH + '/stylesheets/d3.css' rel='stylesheet')
+        link(href=process.env.FF_PATH + 'stylesheets/main.css' rel='stylesheet')
+        link(href=process.env.FF_PATH + 'stylesheets/d3.css' rel='stylesheet')
 
-        script(src=process.env.FF_PATH + "/osd/openseadragon.min.js")
+        script(src=process.env.FF_PATH + "osd/openseadragon.min.js")
 
-        script(src=process.env.FF_PATH + "/external_javascripts/jquery-3.6.0.js")
-        script(src=process.env.FF_PATH + "/external_javascripts/d3.v4.js")
-        //- script(src=process.env.FF_PATH + "/external_javascripts/dropzone-6.0.0-min.js")
+        script(src=process.env.FF_PATH + "external_javascripts/jquery-3.6.0.js")
+        script(src=process.env.FF_PATH + "external_javascripts/d3.v4.js")
+        //- script(src=process.env.FF_PATH + "external_javascripts/dropzone-6.0.0-min.js")
         script(src="https://unpkg.com/dropzone@6.0.0-beta.1/dist/dropzone-min.js")
-        //- script(src=process.env.FF_PATH + "/external_javascripts/socket.io-4.5.0-min.js")
+        //- script(src=process.env.FF_PATH + "external_javascripts/socket.io-4.5.0-min.js")
         script(src="https://cdn.socket.io/4.5.0/socket.io.min.js" integrity="sha384-7EyYLQZgWBi67fBtVxw60/OWl1kjsfrPFcaU0pp0nAh+i8FD068QogUvg85Ewy1k" crossorigin="anonymous")
         script(src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/js/select2.min.js")
 
-        script(src=process.env.FF_PATH + '/javascripts/home.js')
-        script(src=process.env.FF_PATH + '/javascripts/common.js')
-        script(src=process.env.FF_PATH + '/javascripts/modal.js')
-        script(src=process.env.FF_PATH + '/javascripts/upload.js')
-        script(src=process.env.FF_PATH + '/javascripts/canvas_overlay.js')
-        script(src=process.env.FF_PATH + '/javascripts/class_count_chart.js')
-        //- script(src=process.env.FF_PATH + '/javascripts/poly.js')
+        script(src=process.env.FF_PATH + 'javascripts/home.js')
+        script(src=process.env.FF_PATH + 'javascripts/common.js')
+        script(src=process.env.FF_PATH + 'javascripts/modal.js')
+        script(src=process.env.FF_PATH + 'javascripts/upload.js')
+        script(src=process.env.FF_PATH + 'javascripts/canvas_overlay.js')
+        script(src=process.env.FF_PATH + 'javascripts/class_count_chart.js')
 
     body
         div(id="container")
@@ -87,16 +86,16 @@ html
                                 td
                                     
                                     div(style="width: 165px")
-                                        table
+                                        table(id="image_set_buttons_container" hidden)
                                             tr
                                                 td
-                                                    button(id="destroy_image_set_button" class="button-red button-red-hover" style="margin: 1px 0px; font-size: 12px; width: 140px;" hidden)
+                                                    button(id="destroy_image_set_button" class="button-red button-red-hover" style="margin: 1px 0px; font-size: 12px; width: 140px")
                                                         i(class="fa-solid fa-circle-xmark" style="margin-right: 5px")
                                                         |
                                                         | Delete Image Set
                                             tr
                                                 td
-                                                    a(id="download_csv" class="button-blue button-blue-hover" style="margin: 1px 0px; font-size: 12px; width: 140px;" download="result.csv" hidden)
+                                                    a(id="download_csv" class="button-blue button-blue-hover" style="margin: 1px 0px; font-size: 12px; width: 140px" download="result.csv")
                                                         i(class="fa-solid fa-file-arrow-down" style="padding-right: 5px")
                                                         |
                                                         | Download Result
@@ -189,12 +188,8 @@ html
                                             hr(style="margin-top: 2px")
 
 
-
-
-                                            //hr
-
-
     script.
+        let ff_path = !{JSON.stringify(ff_path)};
         let username = !{JSON.stringify(username)};
         let data = !{JSON.stringify(data)};
 
