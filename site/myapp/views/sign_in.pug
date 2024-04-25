@@ -12,6 +12,7 @@ html
 
         script(src=process.env.FF_PATH + "external_javascripts/jquery-3.6.0.js")
         script(src=process.env.FF_PATH + "javascripts/sign_in.js")
+        script(src=process.env.FF_PATH + "javascripts/common.js")
 
     body
 
@@ -30,23 +31,24 @@ html
                     table
                         tr 
                             td(style="width: 100%")
-                                input(id="username" name="username" type="text" style="width: 345px" autocomplete="username" required)
+                                input(id="username" name="username" type="text" style="width: 345px" autocomplete="username" minlength=3 maxlength=30 required)
 
                     label(for="password" class="label" style="text-align: left; padding-left: 5px") Password
 
                     table
                         tr 
                             td 
-                                input(id="password" name="password" type="password" style="width: 345px" autocomplete="current-password" required)
+                                input(id="password" name="password" type="password" style="width: 345px" autocomplete="current-password" minlength=8 maxlength=40 required)
                             td 
                                 i(id="password_vis_toggle" style="cursor: pointer; color: white; margin-left: -40px; margin-bottom: 17px; font-size: 15px" class="fa-solid fa-eye-slash")
 
 
                     div(style="height: 20px")
 
-                    button(class="button-blue button-blue-hover" style="width: 95%")
-                        span Sign In
+                    button(id="sign_in_button" class="button-blue button-blue-hover" style="width: 95%")
+                        span(id="sign_in_button_text") Sign In
 
             div(style="height: 50px; display: block")
-                br
-                span(id="error_message" style="text-align: center;")
+                div(style="height: 25px")
+                div(id="error_message" style="text-align: center")
+                div(id="sign_in_loader" class="loader")

@@ -17,20 +17,21 @@ const nat_orderBy = require('natural-orderby');
 
 const { spawn, exec } = require('child_process');
 
+var Mutex = require('async-mutex').Mutex;
+const sign_in_log_mutex = new Mutex();
 
 const FILE_FORMAT = /[\s `!@#$%^&*()+\=\[\]{};':"\\|,<>\/?~]/;
 const IMAGE_SET_NAME_FORMAT = /[\s `!@#$%^&*()+\=\[\]{}.;':"\\|,<>\/?~]/;
 
 const MAX_EXTENSIONLESS_FILENAME_LENGTH = 100;
 
-
-
-
 const USERNAME_FORMAT = /[\s `!@#$%^&*()+\=\[\]{}.;':"\\|,<>\/?~]/;
-const MIN_USERNAME_LENGTH = 1;
-const MAX_USERNAME_LENGTH = 255;
-const MIN_PASSWORD_LENGTH = 1;
-const MAX_PASSWORD_LENGTH = 255;
+const PASSWORD_FORMAT = /[\s ]/;
+const NONPRINTABLE_FORMAT = /[^ -~]+/;
+const MIN_USERNAME_LENGTH = 3;
+const MAX_USERNAME_LENGTH = 30;
+const MIN_PASSWORD_LENGTH = 8;
+const MAX_PASSWORD_LENGTH = 40;
 
 
 if (process.env.NODE_ENV === "docker") {
@@ -90,16 +91,49 @@ function fpath_exists(fpath) {
     return exists;
 }
 
+function delay(time) {
+    return new Promise(resolve => setTimeout(resolve, time));
+}
+
+
+function log_sign_in_attempt(content) {
+
+    sign_in_log_mutex.acquire()
+    .then(function(release) {
+        let log_time = new Date().toISOString();
+        let sign_in_log_path = path.join(USR_SHARED_ROOT, "sign_in_log.txt");
+        let log_line = log_time + " " + content;
+        if (fs.existsSync(sign_in_log_path)) {
+            log_line = "\n" + log_line;
+        }
+        fs.appendFile(sign_in_log_path, log_line, error => {
+            release();
+            if (error) {
+                console.log("Failed to write to sign-in log file");
+                console.log(error);
+            }
+            return;
+        });
+    }).catch(function(error) {
+        console.log("Failed to acquire sign-in log mutex");
+        console.log(error);
+    });
+}
+
+
+
+
 
 exports.get_sign_in = function(req, res, next) {
     res.render('sign_in');
 }
 
-
 exports.post_sign_in = function(req, res, next) {
     let response = {};
     response.not_found = false;
     response.error = false;
+
+    let ip = req.socket.remoteAddress;
 
     return models.users.findOne({
     where: {
@@ -108,21 +142,32 @@ exports.post_sign_in = function(req, res, next) {
     }).then(user => {
         if (!user) {
             response.not_found = true;
-            return res.json(response);
+            let log_str = "FAIL    " + ip + " " + req.body.username + " " + req.body.password;
+            log_sign_in_attempt(log_str);
+            delay(5 * 1000).then(() => { 
+                return res.json(response);
+            });
+
         }
         else {
             if (!user.check_password(req.body.password)) {
                 response.not_found = true;
-                return res.json(response);
+                let log_str = "FAIL    " + ip + " " + req.body.username + " " + req.body.password;
+                log_sign_in_attempt(log_str);
+                delay(5 * 1000).then(() => { 
+                    return res.json(response);
+                });
+
             }
             else {
+                let log_str = "SUCCESS " + ip + " " + req.body.username;
+                log_sign_in_attempt(log_str);
                 if (user.is_admin) {
                     req.session.user = user.dataValues;
                     response.redirect = process.env.FF_PATH + "admin";
                     return res.json(response);
                 }
                 else {
-                    console.log("redirecting user to their home dir");
                     req.session.user = user.dataValues;
                     response.redirect = process.env.FF_PATH + "home/" + req.body.username;
                     return res.json(response);
@@ -131,6 +176,8 @@ exports.post_sign_in = function(req, res, next) {
         }
     }).catch(error => {
         console.log(error);
+        let log_str = "ERROR   " + ip + " " + req.body.username;
+        log_sign_in_attempt(log_str);
         response.error = true;
         return res.json(response);
     });
@@ -295,6 +342,12 @@ exports.post_admin = function(req, res, next) {
             return res.json(response);
         }
 
+        if (NONPRINTABLE_FORMAT.test(username)) {
+            response.message = "The provided username contains non-printable characters";
+            response.error = true;
+            return res.json(response);
+        }
+
         if (USERNAME_FORMAT.test(username)) {
             response.message = "The provided username contains illegal characters.";
             response.error = true;
@@ -309,6 +362,18 @@ exports.post_admin = function(req, res, next) {
 
         if (username.length > MAX_USERNAME_LENGTH) {
             response.message = "The provided username is too long.";
+            response.error = true;
+            return res.json(response);
+        }
+
+        if (NONPRINTABLE_FORMAT.test(password)) {
+            response.message = "The provided password contains non-printable characters";
+            response.error = true;
+            return res.json(response);
+        }
+
+        if (PASSWORD_FORMAT.test(password)) {
+            response.message = "The provided password contains illegal characters.";
             response.error = true;
             return res.json(response);
         }
@@ -744,6 +809,13 @@ exports.post_image_set_upload = async function(req, res, next) {
     if (first) {
 
         for (let filename of queued_filenames) {
+            if (NONPRINTABLE_FORMAT.test(filename)) {
+                delete active_uploads[upload_uuid];
+                return res.status(422).json({
+                    error: "One or more provided filenames contains non-printable characters."
+                });
+            }
+
             if (FILE_FORMAT.test(filename)) {
                 delete active_uploads[upload_uuid];
                 return res.status(422).json({
@@ -787,6 +859,13 @@ exports.post_image_set_upload = async function(req, res, next) {
             delete active_uploads[upload_uuid];
             return res.status(422).json({
                 error: "The provided image set name is too long."
+            });
+        }
+
+        if (NONPRINTABLE_FORMAT.test(image_set_name)) {
+            delete active_uploads[upload_uuid];
+            return res.status(422).json({
+                error: "The provided image set name contains non-printable characters."
             });
         }
         if (IMAGE_SET_NAME_FORMAT.test(image_set_name)) {
