@@ -193,8 +193,6 @@ function apply_overlay_appearance_change() {
 
 function apply_front_end_appearance_change() {
 
-
-
     if (viewer) {
         update_count_chart();
         viewer.raiseEvent('update-viewport');
@@ -325,8 +323,6 @@ function update_fusarium_percentage() {
 
 function show_image_predictions() {
 
-
-
     let pred_callback = function() {
 
         update_fusarium_percentage();
@@ -344,8 +340,6 @@ function show_image_predictions() {
 
         viewer.open(dzi_image_path); 
     };
-
-
 
     if (cur_image_name in predictions) {
         pred_callback();
@@ -403,12 +397,6 @@ function populate_image_set_combo() {
 
     }
     $("#image_set_combo").prop("selectedIndex", -1);
-
-    // $("#im_set_options").empty();
-    // for (let image_set_name of image_set_names) {
-    //     $("#im_set_options").append(`<a>${image_set_name}</a>`);
-    // }
-
 }
 
 
@@ -440,6 +428,12 @@ $(document).ready(function() {
 
     image_set_names = data["image_set_names"];
     overlay_appearance = data["overlay_appearance"];
+
+    if (data["maintenance_message"] !== "") {
+        $("#maintenance_message").html(data["maintenance_message"]);
+        $("#maintenance_message").show();
+    }
+
 
     populate_image_set_combo();
     initialize_class_select();

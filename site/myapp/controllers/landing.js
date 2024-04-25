@@ -100,7 +100,6 @@ exports.post_sign_in = function(req, res, next) {
     let response = {};
     response.not_found = false;
     response.error = false;
-    response.maintenance = false;
 
     return models.users.findOne({
     where: {
@@ -411,9 +410,26 @@ exports.get_home = function(req, res, next) {
             return res.redirect(process.env.FF_PATH);
         }
 
+
+        let maintenance_message = "";
+        let maintenance_path = path.join(USR_SHARED_ROOT, "maintenance.json");
+        if (fpath_exists(maintenance_path)) {
+            try {
+                maintenance_log = JSON.parse(fs.readFileSync(maintenance_path, 'utf8'));
+            }
+            catch (error) {
+                console.log(error);
+                return res.redirect(process.env.AC_PATH);
+            }
+
+            maintenance_message = maintenance_log["message"];
+        }
+
+
         let data = {};
         data["image_set_names"] = image_set_names;
         data["overlay_appearance"] = overlay_appearance;
+        data["maintenance_message"] = maintenance_message;
 
         console.log("rendering home page");
     
