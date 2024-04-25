@@ -183,8 +183,12 @@ def create_spreadsheet(job):
         num_shriveled = np.sum(classes == 2)
         num_tombstone = np.sum(classes == 3)
 
-        frac_fus = (num_shriveled + num_tombstone) / (num_shriveled + num_tombstone + num_not_fusarium)
-        perc_fus = round(float(frac_fus * 100), 2)
+        denom = num_shriveled + num_tombstone + num_not_fusarium
+        if denom == 0:
+            perc_fus = "NA"
+        else:
+            frac_fus = (num_shriveled + num_tombstone) / denom
+            perc_fus = round(float(frac_fus * 100), 2)
 
 
         d["Image Name"].append(image_name)
