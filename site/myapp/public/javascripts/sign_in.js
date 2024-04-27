@@ -2,10 +2,7 @@ let password_visible = false;
 
 
 
-$(document).ready(function(){
-
-    $("#error_message").hide();
-    $("#sign_in_loader").hide();
+$(document).ready(function() {
 
     $("form").submit(function(e) {
         e.preventDefault();

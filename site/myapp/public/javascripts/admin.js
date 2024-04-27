@@ -135,10 +135,7 @@ $(document).ready(function() {
     }
     natsort(usernames);
 
-
     add_users();
-
-
 
     $("#add_usr_button").click(function() {
         show_modal_message(

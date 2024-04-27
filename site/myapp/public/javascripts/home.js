@@ -479,7 +479,6 @@ $(document).ready(function() {
         },
         
         function(response, status) {
-            console.log("response", response);
             if (response.error) {  
                 show_modal_message("Error", response.message);  
             }
@@ -618,13 +617,17 @@ function delete_image_set() {
 
 
     show_modal_message(`Are you sure?`, 
-        `<div style="height: 30px">Are you sure you want to delete this image set?</div>` +
-        `<div style="height: 20px"></div>` +
-        `<div style="text-align: center">` +
-            `<button class="button-red button-red-hover" style="width: 150px" onclick="confirmed_delete_image_set()">Delete</button>` +
-            `<div style="display: inline-block; width: 10px"></div>` +
-            `<button class="button-blue button-blue-hover" style="width: 150px" onclick="close_modal()">Cancel</button>` +
-            `<div style="height: 20px" id="loader_container"></div>` +
+        `<div id="confirm_message" style="height: 30px">Are you sure you want to delete this image set?</div>` +
+        `<div style="height: 10px"></div>` +
+        `<div style="text-align: center; height: 40px">` +
+            `<div id="confirmation_button_container">` +
+                `<button id="confirm_delete_button" class="button-red button-red-hover" style="width: 150px" onclick="confirmed_delete_image_set()">Delete</button>` +
+                `<div style="display: inline-block; width: 10px"></div>` +
+                `<button id="confirm_close_button" class="button-blue button-blue-hover" style="width: 150px" onclick="close_modal()">Cancel</button>` +
+            `</div>` +
+            `<div id="loader_container" hidden>` +
+                `<div class="loader"></div>` +
+            `</div>` +
         `</div>`
     );
 }
@@ -632,9 +635,11 @@ function delete_image_set() {
 
 function confirmed_delete_image_set() {
 
-    $("#loader_container").append(
-        `<div class="loader"></div>`
-    );
+    $("#modal_close").hide();
+    $("#confirmation_button_container").hide();
+    $("#modal_head_text").html("Please Wait");
+    $("#confirm_message").html("");
+    $("#loader_container").show();
 
     let image_set_to_del = $("#image_set_combo").val();
 

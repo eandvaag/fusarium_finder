@@ -150,12 +150,10 @@ function add_dropzone_listeners() {
 
             let new_image_set_name = $("#image_set_name_input").val()
             image_set_names.push(new_image_set_name);
-            // let selected_image_set_name = $("#image_set_combo").val();
             populate_image_set_combo();
-            $("#image_set_combo").val(new_image_set_name).change(); //selected_image_set_name);
+            $("#image_set_combo").val(new_image_set_name).change();
             global_disabled = false;
 
-            // show_modal_message(`Success!`, `<div align="center">Your image set has been successfully uploaded.<br>The image set is now being processed.`);
             close_modal();
 
         }
