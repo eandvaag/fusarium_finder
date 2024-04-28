@@ -41,10 +41,11 @@ Below is an explanation of the keys that `ff_ctl.py` expects to find in the `arg
 - `admin_password`: Password for the site's administrator account.
 - `gpu_index`: Index of GPU device to use. If only one GPU is available, this should be 0. Use -1 if you want to use the CPU instead.
 
-
-
 To stop the Docker container without removing the PostGreSQL volume, use `./ff_ctl.py --down`. The container can then be rebuilt with `./ff_ctl.py --up`. To stop the container and remove the PostGreSQL volume, use `./ff_ctl.py --destroy`.
 
+When a Fusarium Finder Docker instance is created with `./ff_ctl.py -c`, only the administrator account 
+is seeded to the database. In order to add regular user accounts, it is necessary to log in as the 
+administrator and add the new user accounts through the administrator web page interface. 
 
 
 ### Non-Docker Install
