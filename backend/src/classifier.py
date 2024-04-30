@@ -8,10 +8,11 @@ import time
 import datetime
 from PIL import Image as PILImage
 import shutil
-import uuid
+
 
 from io_utils import json_io
 from image_wrapper import ImageWrapper
+import emit
 
 def load_predictions_from_dir(predictions_dir):
     predictions = {}
@@ -75,57 +76,34 @@ def classify_detections(job):
 
     image_set_dir = os.path.join("usr", "data", username, "image_sets", image_set_name)
 
-
-
     classifier_dir = os.path.join("usr", "shared", "classifier")
     weights_dir = os.path.join(classifier_dir, "weights")
 
     weights_path = os.path.join(weights_dir, "weights.h5")
 
-    # model = get_model()
-
     data_augmentation = tf.keras.Sequential([
         tf.keras.layers.RandomFlip("horizontal_and_vertical"),
-        # tf.keras.layers.RandomRotation(1.0),
         tf.keras.layers.RandomZoom((-0.15, 0.15), fill_mode="constant"),
-        # tf.keras.layers.RandomBrightness(0.2)
     ])
 
     IMAGE_SIZE = 224
     IMAGE_SHAPE = (IMAGE_SIZE, IMAGE_SIZE, 3)
-    # preprocess_input = tf.keras.applications.mobilenet_v2.preprocess_input
-    # base_model = tf.keras.applications.MobileNetV2(input_shape=IMAGE_SHAPE,
-    #                                            include_top=False,
-    #                                            weights='imagenet')
+
     preprocess_input = tf.keras.applications.mobilenet_v3.preprocess_input
     base_model = tf.keras.applications.MobileNetV3Small(input_shape=IMAGE_SHAPE,
                                                include_top=False,
                                                weights='imagenet')
-    # preprocess_input = tf.keras.applications.mobilenet_v3.preprocess_input
-    # base_model = tf.keras.applications.MobileNetV3Large(input_shape=IMAGE_SHAPE,
-    #                                            include_top=False,
-    #                                            weights='imagenet')
-    # preprocess_input = tf.keras.applications.xception.preprocess_input
-    # base_model = tf.keras.applications.Xception(input_shape=IMAGE_SHAPE,
-    #                                            include_top=False,
-    #                                            weights='imagenet')
 
-    base_model.trainable = True #False
+    base_model.trainable = True
 
     inputs = tf.keras.Input(shape=IMAGE_SHAPE)
     x = data_augmentation(inputs)
     x = preprocess_input(x)
-    x = base_model(x, training=False) #False)
+    x = base_model(x, training=False)
     x = tf.keras.layers.GlobalAveragePooling2D()(x)
     outputs = tf.keras.layers.Dense(4)(x)
     model = tf.keras.Model(inputs, outputs)
 
-
-
-
-
-
-    # model.build(input_shape=(224, 224, 3))
     model.load_weights(weights_path, by_name=False)
 
 
@@ -135,11 +113,14 @@ def classify_detections(job):
 
     predictions = load_predictions_from_dir(prediction_dir)
 
-    # debug_out_dir = os.path.join(image_set_dir, "debug_classifier_patches")
-    # os.makedirs(debug_out_dir)
+    total_num_boxes = 0
+    for image_name in predictions.keys():
+        total_num_boxes += len(predictions[image_name]["boxes"])
 
-    # res = np.zeros(shape=(4), dtype=np.int64)
+
+    num_processed = 0
     rev_predictions = {}
+    prev_percent_complete = 0
     for image_name in predictions.keys():
  
         image_path = glob.glob(os.path.join(image_set_dir, "images", image_name + ".*"))[0]
@@ -148,8 +129,6 @@ def classify_detections(job):
         image_array = image_wrapper.load_image_array()
 
         boxes = predictions[image_name]["boxes"]
-        scores = predictions[image_name]["scores"]
-        # boxes = boxes[scores > 0.5]
 
         patch_size = 224
         classifier_scores = []
@@ -166,10 +145,6 @@ def classify_detections(job):
                 crop = image_array[box[0]:box[2], box[1]:box[3], :]
                 crop_width = crop.shape[1]
                 crop_height = crop.shape[0]
-                # if crop_height > patch_size or crop_width > patch_size:
-                #     # patch_array = tf.image.resize_with_pad(patch_array, patch_size, patch_size)
-                #     patch_array = np.array(PILImage.fromarray(crop).crop_pad((patch_size, patch_size)))
-                #     # patch_array = tf.cast(patch_array, dtype=tf.float32)\
 
                 if crop_height > patch_size or crop_width > patch_size:
 
@@ -182,72 +157,37 @@ def classify_detections(job):
                     crop_height = crop.shape[0]
 
 
-                # else:
                 pad_width = (patch_size - crop_width)
                 pad_left = pad_width // 2
                 pad_height = (patch_size - crop_height)
                 pad_bottom = pad_height // 2
 
-                # print("0 crop", crop.dtype, np.max(crop), np.min(crop))
-
                 patch_array = np.zeros(shape=(patch_size, patch_size, 3), dtype=np.uint8)
                 patch_array[pad_bottom:pad_bottom+crop.shape[0], pad_left:pad_left+crop.shape[1], :] = crop
 
-                # patch_array = tf.cast(patch_array, dtype=tf.float32)
-                # patch_array = tf.image.resize(images=patch_array, size=(224, 224))
-                # print("1 patch", patch_array.dtype, np.max(patch_array), np.min(patch_array))
-
-
-                # out_path = os.path.join(debug_out_dir, str(uuid.uuid4()) + ".png")
-                # (PILImage.fromarray(patch_array.astype(np.uint8))).save(out_path)
                 patch_array = tf.convert_to_tensor(patch_array, dtype=tf.float32)
-                # print("2 tf patch", patch_array.dtype, tf.math.reduce_min(patch_array), tf.math.reduce_max(patch_array))
-                
+
                 batch_patch_arrays.append(patch_array)
 
 
             batch_patch_arrays = tf.stack(batch_patch_arrays, axis=0)
-            # batch_patch_arrays = np.array(batch_patch_arrays)
-            
-            # print(batch_patch_arrays.shape)
-            # print(tf.shape(batch_patch_arrays))
+
             y_pred = tf.nn.softmax(model.predict_on_batch(batch_patch_arrays))
 
-            # print(tf.shape(y_pred))
-
-            # y_pred = y_pred.numpy()
-            # print(y_pred)
-
             for i in range(tf.shape(y_pred)[0]):
-                # cor_cls = tf.argmax(y[i]).numpy()
                 pred_cls = tf.argmax(y_pred[i]).numpy()
                 cls_score = tf.math.reduce_max(y_pred[i]).numpy()
 
                 classifier_classes.append(int(pred_cls))
                 classifier_scores.append(float(cls_score))
 
-
-                # res[pred_cls] += 1
-
-
-
-            # max_inds = np.argmax(y_pred, axis=1)
-            # cls_scores = y_pred[np.arange(y_pred.shape[0]), max_inds]
-
-            # classifier_scores.extend(tf.reduce_max(y_pred).numpy().tolist())
-            # classifier_classes.extend(tf.argmax(y_pred).numpy().tolist())
-
-            # classifier_scores.extend(cls_scores.tolist())
-            # classifier_classes.extend(max_inds.tolist())
-
-            # for i in range(tf.shape(y_pred)[0]):
-            #     classifier_class = int(tf.argmax(y_pred[i]).numpy())
-            #     classifier_score = float(tf.max(y_pred[i]).numpy())
-
-            #     classifier_scores.append(classifier_score)
-            #     classifier_classes.append(classifier_class)
-                
-
+            num_processed += int(tf.shape(y_pred)[0])
+            percent_complete = round((num_processed / total_num_boxes) * 100)
+            if percent_complete > prev_percent_complete:
+                emit.emit_image_set_progress_update(username, 
+                                                    image_set_name, 
+                                                    "Running Classifier (" + str(percent_complete) + "% Complete)") 
+                prev_percent_complete = percent_complete
 
         rev_predictions[image_name] = {
             "boxes": predictions[image_name]["boxes"].tolist(),
@@ -255,18 +195,6 @@ def classify_detections(job):
             "classes": classifier_classes,
             "classifier_scores": classifier_scores
         }
-
-    # print("res", res)
-
-    # validation_ds = tf.keras.preprocessing.image_dataset_from_directory(
-    #     directory=debug_out_dir,
-    #     labels=None,
-    #     label_mode=None,
-    #     batch_size=32,
-    #     image_size=(224, 224))
-
-    
-    # evaluate(model, "val", validation_ds)
 
     shutil.rmtree(prediction_dir)
 
@@ -278,20 +206,3 @@ def classify_detections(job):
     end_time = time.time()
     elapsed = str(datetime.timedelta(seconds=round(end_time - start_time)))
     logger.info("Finished classification. Time elapsed: {}".format(elapsed))
-                
-
-
-
-def evaluate(model, ds_name, ds):
-    res = np.zeros(shape=(4), dtype=np.int64)
-    for batch in ds:
-        y_pred = tf.nn.softmax(model.predict_on_batch(batch))
-
-        for i in range(tf.shape(y_pred)[0]):
-            pred_cls = tf.argmax(y_pred[i]).numpy()
-            res[pred_cls] += 1
-
-    print("---")
-    print(ds_name)
-    print(res)
-    print()

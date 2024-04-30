@@ -580,28 +580,10 @@ exports.post_home = async function(req, res, next) {
             response.image_names = image_names;
             response.error = false;
             return res.json(response);
-
-            // glob(path.join(images_dir, "*"), function(error, image_paths) {
-            //     if (error) {
-            //         console.log(error);
-            //         response.error = true;
-            //         response.message = "Failed to retrieve image listing.";
-            //         return res.json(response);
-            //     }
-            //     console.log("no error");
-            //     let image_names = [];
-            //     for (let image_path of image_paths) {
-            //         let image_name_with_ext = path.basename(image_path);
-            //         let image_name = image_name_with_ext.split(".")[0];
-            //         image_names.push(image_name);
-            //     }
-            //     console.log(image_names);
-            //     image_names = nat_orderBy.orderBy(image_names);
-            //     console.log(image_names);
-            //     response.image_names = image_names;
-            //     response.error = false;
-            //     return res.json(response);
-            // });
+        }
+        else if (status["status"] === "processing") {
+            response.progress = status["progress"];
+            return res.json(response);
         }
         else {
             response.error = false;
@@ -976,7 +958,7 @@ exports.post_image_set_upload = async function(req, res, next) {
 
         let upload_status_path = path.join(image_set_dir, "upload_status.json")
         try {
-            fs.writeFileSync(upload_status_path, JSON.stringify({"status": "processing"}));
+            fs.writeFileSync(upload_status_path, JSON.stringify({"status": "processing", "progress": "Converting Images"}));
         }
         catch (error) {
             delete active_uploads[upload_uuid];

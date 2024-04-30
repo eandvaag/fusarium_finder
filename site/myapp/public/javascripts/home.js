@@ -457,6 +457,15 @@ $(document).ready(function() {
     });
 
 
+    socket.on("progress_change", function(message) {
+        let affected_image_set = message["image_set_name"];
+        if ($("#image_set_combo").val() === affected_image_set) {
+            let progress_message = message["progress"];
+            $("#progress_message").html(progress_message);
+        }
+    });
+
+
 
     $("#image_set_combo").change(function() {
 
@@ -479,6 +488,7 @@ $(document).ready(function() {
         },
         
         function(response, status) {
+            console.log(response);
             if (response.error) {  
                 show_modal_message("Error", response.message);  
             }
@@ -491,6 +501,10 @@ $(document).ready(function() {
                         `<div style="font-size: 20px"><i class="fa-regular fa-hourglass-half"></i><span style="margin-left: 10px">Processing</span></div>` +
                         `<div style="height: 10px"></div>` +
                         `<div>This image set is currently being processed. The page will automatically update when the image set is ready to be viewed.</div>` +
+                        `<div style="height: 40px"></div>` +
+                        `<hr style="margin: auto; width: 200px">` +
+                        `<div style="height: 15px"></div>` +
+                        `<div id="progress_message" style="width: 300px; display: inline-block; text-align: center; margin-left: 10px; color: white; font-style: italic;">` + response.progress + `</div>` +
                         `<div style="height: 20px"></div>`
                     );
                     $("#image_set_message").show();

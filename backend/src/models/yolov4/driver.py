@@ -369,6 +369,10 @@ def predict(job):
             batch_index += 1
             prev_percent_complete = percent_complete
             percent_complete = round((batch_index / num_batches) * 100)
+            if m.floor(percent_complete) > m.floor(prev_percent_complete):
+                emit.emit_image_set_progress_update(username, 
+                                                    image_set_name, 
+                                                    "Running Object Detector (" + str(percent_complete) + "% Complete)") 
 
 
     start_nms_time = time.time()

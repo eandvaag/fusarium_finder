@@ -31,5 +31,6 @@ router.post('/admin', landing.post_admin);
 
 router.post('/image_set_upload', upload_files.array('source_file[]'), landing.post_image_set_upload);
 router.post('/upload_notification', check_api_key, socket_api.post_upload_notification);
+router.post('/progress_notification', check_api_key, socket_api.post_progress_notification);
 
 module.exports = router;

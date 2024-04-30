@@ -2,24 +2,27 @@ import os
 import requests
 import logging
 
+from io_utils import json_io
 
-RUNNING_IN_APPTAINER = "RUNNING_IN_APPTAINER" in os.environ and os.environ["RUNNING_IN_APPTAINER"] == "yes"
-if RUNNING_IN_APPTAINER:
-    base_url = ""
-else:
-    base_url = "https://" + os.environ.get("FF_IP") + ":" + os.environ.get("FF_PORT") + os.environ.get("FF_PATH")
+
+base_url = "https://" + os.environ.get("FF_IP") + ":" + os.environ.get("FF_PORT") + os.environ.get("FF_PATH")
 upload_notification_url = base_url + "upload_notification"
+progress_notification_url = base_url + "progress_notification"
 
 
 
 def emit_upload_notification(username, image_set_name):
     emit(upload_notification_url, {"username": username, "image_set_name": image_set_name})
 
+def emit_image_set_progress_update(username, image_set_name, progress_message):
+    image_set_dir = os.path.join("usr", "data", username, "image_sets", image_set_name)
+    upload_status_path = os.path.join(image_set_dir, "upload_status.json")
+    json_io.save_json(upload_status_path, {"status": "processing", "progress": progress_message})
+    emit(progress_notification_url, {"username": username, "image_set_name": image_set_name, "progress": progress_message})
+
+
 def emit(url, data):
     logger = logging.getLogger(__name__)
-
-    if RUNNING_IN_APPTAINER:
-        return True
 
     logger.info("Emitting {} to {}".format(data, url))
     headers = {'API-Key': os.environ["FF_API_KEY"]}

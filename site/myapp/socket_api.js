@@ -56,4 +56,27 @@ exports.post_upload_notification = function(req, res, next) {
 }
 
 
+exports.post_progress_notification = function(req, res, next) {
+    let username = req.body.username;
+    let image_set_name = req.body.image_set_name;
+    let progress_message = req.body.progress;
+
+    console.log("upload progress occurred, sending to sockets");
+    console.log(username, image_set_name, progress_message);
+    console.log("home_id_to_key", home_id_to_key);
+
+    let key = username;
+
+    for (let socket_id of Object.keys(home_id_to_key)) {
+        if (home_id_to_key[socket_id] === key) {
+            io.to(socket_id).emit("progress_change", {"image_set_name": image_set_name, "progress": progress_message});
+        }
+    }
+
+    let response = {};
+    response.message = "received";
+    return res.json(response);
+}
+
+
 module.exports.io = io;
