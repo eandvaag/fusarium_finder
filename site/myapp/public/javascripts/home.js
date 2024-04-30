@@ -316,9 +316,14 @@ function update_fusarium_percentage() {
             }
         }
     }
-    let fus_frac = (num_fus / num_tot);
-    let fus_perc = (fus_frac * 100).toFixed(2) + "%";
-    $("#fusarium_percentage").html(fus_perc);
+    if (num_tot == 0) {
+        $("#fusarium_percentage").html("NA");
+    }
+    else {
+        let fus_frac = (num_fus / num_tot);
+        let fus_perc = (fus_frac * 100).toFixed(2) + "%";
+        $("#fusarium_percentage").html(fus_perc);
+    }
 }
 
 function show_image_predictions() {
@@ -488,7 +493,6 @@ $(document).ready(function() {
         },
         
         function(response, status) {
-            console.log(response);
             if (response.error) {  
                 show_modal_message("Error", response.message);  
             }
