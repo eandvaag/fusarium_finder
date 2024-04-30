@@ -504,7 +504,7 @@ $(document).ready(function() {
                         `<div style="height: 40px"></div>` +
                         `<hr style="margin: auto; width: 200px">` +
                         `<div style="height: 15px"></div>` +
-                        `<div id="progress_message" style="width: 300px; display: inline-block; text-align: center; margin-left: 10px; color: white; font-style: italic;">` + response.progress + `</div>` +
+                        `<div id="progress_message" style="font-style: italic;">` + response.progress + `</div>` +
                         `<div style="height: 20px"></div>`
                     );
                     $("#image_set_message").show();

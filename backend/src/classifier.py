@@ -1,6 +1,7 @@
 import logging
 import os
 import glob
+import math as m
 import numpy as np
 import cv2
 import tensorflow as tf
@@ -72,6 +73,10 @@ def classify_detections(job):
     username = job["username"]
     image_set_name = job["image_set_name"]
 
+    emit.emit_image_set_progress_update(username, 
+        image_set_name, 
+        "Running Classifier (0% Complete)") 
+
     tf.keras.backend.clear_session()
 
     image_set_dir = os.path.join("usr", "data", username, "image_sets", image_set_name)
@@ -113,12 +118,16 @@ def classify_detections(job):
 
     predictions = load_predictions_from_dir(prediction_dir)
 
-    total_num_boxes = 0
+    batch_size = 64
+    patch_size = 224
+
+
+    num_batches = 0
     for image_name in predictions.keys():
-        total_num_boxes += len(predictions[image_name]["boxes"])
+        num_batches += m.ceil(len(predictions[image_name]["boxes"]) / batch_size)
 
 
-    num_processed = 0
+    num_batches_processed = 0
     rev_predictions = {}
     prev_percent_complete = 0
     for image_name in predictions.keys():
@@ -130,11 +139,9 @@ def classify_detections(job):
 
         boxes = predictions[image_name]["boxes"]
 
-        patch_size = 224
+
         classifier_scores = []
         classifier_classes = []
-        batch_size = 64
-
 
 
         for start_ind in range(0, boxes.shape[0], batch_size):
@@ -181,8 +188,8 @@ def classify_detections(job):
                 classifier_classes.append(int(pred_cls))
                 classifier_scores.append(float(cls_score))
 
-            num_processed += int(tf.shape(y_pred)[0])
-            percent_complete = round((num_processed / total_num_boxes) * 100)
+            num_batches_processed += 1
+            percent_complete = round((num_batches_processed / num_batches) * 100)
             if percent_complete > prev_percent_complete:
                 emit.emit_image_set_progress_update(username, 
                                                     image_set_name, 

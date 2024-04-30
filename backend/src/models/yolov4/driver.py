@@ -271,7 +271,7 @@ def predict(job):
     overlap_px = int(m.floor(patch_size * (patch_overlap_percent / 100)))
 
     all_patch_data, num_batches = get_prediction_patches(image_set_dir, patch_size, overlap_px, config)
-    percent_complete = 0
+    prev_percent_complete = 0
     batch_index = 0
 
     for image_path in glob.glob(os.path.join(image_set_dir, "images", "*")):
@@ -312,68 +312,67 @@ def predict(job):
             batch_patch_arrays.append(patch_array)
             batch_ratios.append(patch_ratio)
 
-        if len(batch_patch_arrays) == config["inference"]["batch_size"] or patch_index == len(all_patch_data[image_name]) - 1:
-            batch_patch_arrays = tf.stack(batch_patch_arrays, axis=0)
-            batch_size = batch_patch_arrays.shape[0]
-            
-            pred = yolov4(batch_patch_arrays, training=False)
-            detections = decoder(pred)
-
-            batch_pred_bbox = [tf.reshape(x, (batch_size, -1, tf.shape(x)[-1])) for x in detections]
-
-            batch_pred_bbox = tf.concat(batch_pred_bbox, axis=1)
-
-
-            for i in range(batch_size):
-
-                pred_bbox = batch_pred_bbox[i]
-                ratio = batch_ratios[i]
-                patch_coords = batch_patch_coords[i]
-
+            if len(batch_patch_arrays) == config["inference"]["batch_size"] or patch_index == len(all_patch_data[image_name]) - 1:
+                batch_patch_arrays = tf.stack(batch_patch_arrays, axis=0)
+                batch_size = batch_patch_arrays.shape[0]
                 
+                pred = yolov4(batch_patch_arrays, training=False)
+                detections = decoder(pred)
 
-                pred_patch_abs_boxes, pred_patch_scores, pred_patch_classes = \
-                        post_process_sample(pred_bbox, 
-                                            ratio, 
-                                            patch_coords, 
-                                            config, 
-                                            [0, 0, image_height, image_width], 
-                                            score_threshold=0.01)
+                batch_pred_bbox = [tf.reshape(x, (batch_size, -1, tf.shape(x)[-1])) for x in detections]
 
-                if image_name not in predictions:
-                    predictions[image_name] = {
-                            "boxes": [],
-                            "scores": [],
-                            "classes": [],    
-                    }
+                batch_pred_bbox = tf.concat(batch_pred_bbox, axis=1)
 
 
-                pred_image_abs_boxes, pred_image_scores, pred_image_classes = \
-                    driver_utils.get_image_detections(pred_patch_abs_boxes, 
-                                                    pred_patch_scores,
-                                                    pred_patch_classes,
-                                                    patch_coords, 
-                                                    [0, 0, image_height, image_width],
-                                                    trim=True)
+                for i in range(batch_size):
 
-                predictions[image_name]["boxes"].extend(pred_image_abs_boxes.tolist())
-                predictions[image_name]["scores"].extend(pred_image_scores.tolist())
-                predictions[image_name]["classes"].extend(pred_image_classes.tolist())
+                    pred_bbox = batch_pred_bbox[i]
+                    ratio = batch_ratios[i]
+                    patch_coords = batch_patch_coords[i]
+
+                    
+
+                    pred_patch_abs_boxes, pred_patch_scores, pred_patch_classes = \
+                            post_process_sample(pred_bbox, 
+                                                ratio, 
+                                                patch_coords, 
+                                                config, 
+                                                [0, 0, image_height, image_width], 
+                                                score_threshold=0.01)
+
+                    if image_name not in predictions:
+                        predictions[image_name] = {
+                                "boxes": [],
+                                "scores": [],
+                                "classes": [],    
+                        }
 
 
-            batch_patch_arrays = []
-            batch_ratios = []
-            batch_patch_coords = []
+                    pred_image_abs_boxes, pred_image_scores, pred_image_classes = \
+                        driver_utils.get_image_detections(pred_patch_abs_boxes, 
+                                                        pred_patch_scores,
+                                                        pred_patch_classes,
+                                                        patch_coords, 
+                                                        [0, 0, image_height, image_width],
+                                                        trim=True)
+
+                    predictions[image_name]["boxes"].extend(pred_image_abs_boxes.tolist())
+                    predictions[image_name]["scores"].extend(pred_image_scores.tolist())
+                    predictions[image_name]["classes"].extend(pred_image_classes.tolist())
 
 
-            batch_index += 1
-            prev_percent_complete = percent_complete
-            percent_complete = round((batch_index / num_batches) * 100)
-            if m.floor(percent_complete) > m.floor(prev_percent_complete):
-                emit.emit_image_set_progress_update(username, 
-                                                    image_set_name, 
-                                                    "Running Object Detector (" + str(percent_complete) + "% Complete)") 
+                batch_patch_arrays = []
+                batch_ratios = []
+                batch_patch_coords = []
 
+
+                batch_index += 1
+                percent_complete = round((batch_index / num_batches) * 100)
+                if percent_complete > prev_percent_complete:
+                    emit.emit_image_set_progress_update(username, 
+                                                        image_set_name, 
+                                                        "Running Object Detector (" + str(percent_complete) + "% Complete)") 
+                    prev_percent_complete = percent_complete
 
     start_nms_time = time.time()
     driver_utils.apply_nms_to_image_boxes(predictions, 
