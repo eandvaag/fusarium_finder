@@ -16,16 +16,13 @@ The `backend` directory contains the code for the Python process. The Python pro
 
 ### Docker Install
 
-`ff_ctl.py` can be used to create and manage the Fusarium Finder tool inside a Docker container. 
-After cloning the Fusarium Finder repository, a new Docker instance of Fusarium Finder can be built with the following command:
+Follow these steps to create a new Docker instance of Fusarium Finder.
 
-```
-./ff_ctl.py --create
-```
+#### 1. Create args.json file
 
-In order to set up the application, `ff_ctl.py` will attempt to read a configuration file called `args.json`. The `args.json` file should be located in the root directory of the Fusarium Finder repository.
+The `ff_ctl.py` script (located in the root directory of the repository) can be used to create and manage the Fusarium Finder tool inside a Docker container. In order to set up the application, `ff_ctl.py` will attempt to read a configuration file called `args.json`. The `args.json` file should be located in the root directory of the Fusarium Finder repository.
 
-Included in this repository is an `args-template.json` file with the required configuration keys. Before running `./ff_ctl.py --create`, this file needs to be edited with the desired configuration values and renamed to `args.json`. 
+Included in this repository is an `args-template.json` file with the required configuration keys. Before creating a Docker instance of Fusarium Finder, this file needs to be edited with the desired configuration values and renamed to `args.json`. 
 
 Below is an explanation of the keys that `ff_ctl.py` expects to find in the `args.json` file:
 
@@ -41,9 +38,24 @@ Below is an explanation of the keys that `ff_ctl.py` expects to find in the `arg
 - `admin_password`: Password for the site's administrator account.
 - `gpu_index`: Index of GPU device to use. If only one GPU is available, this should be 0. Use -1 if you want to use the CPU instead.
 
+#### 2. Create SSL certificate and key
+
+Before creating a Docker instance of Fusarium Finder, it is also necessary to generate a PEM encoded SSL certificate and private key. A self-signed certificate can be created with the following commands:
+
+```
+cd site/myapp
+openssl genrsa -out key.pem
+openssl req -new -key key.pem -out csr.pem
+openssl x509 -req -days 2000 -in csr.pem -signkey key.pem -out cert.pem
+```
+
+#### 3. Create the containers
+
+To create the Fusarium Finder application for the first time, run `./ff_ctl.py --create`.
+
 To remove the Docker containers without removing the PostGreSQL volume, use `./ff_ctl.py --down`. The containers can then be rebuilt with `./ff_ctl.py --up`. To remove the containers and remove the PostGreSQL volume, use `./ff_ctl.py --destroy`.
 
-When a Fusarium Finder Docker instance is created for the first time with `./ff_ctl.py -c`, only the administrator account is seeded to the database. In order to add regular user accounts, it is necessary to log in as the administrator and add the new user accounts through the administrator web page interface. 
+When a Fusarium Finder Docker instance is created for the first time with `./ff_ctl.py --create`, only the administrator account is seeded to the database. In order to add regular user accounts, it is necessary to log in as the administrator and add the new user accounts through the administrator web page interface. 
 
 
 ### Non-Docker Install
